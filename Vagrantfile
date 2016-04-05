@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-vagrantfile_api_version = "2"
+VAGRANTFILE_API_VERSION = "2"
 
 # load the vm_defs
 require 'yaml'
@@ -16,16 +16,20 @@ hosts = vm_defs.map{ |vm| "#{vm[:ip]}  #{vm[:hostname]}" }.join("\n")
 add_hosts_script = "echo -e '#{hosts}' >> /etc/hosts"
 
 # make the vagrant machines
-Vagrant.configure(vagrantfile_api_version) do |config|
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vm_defs.each do |vm_def|
-    config.vm.define vm_def.fetch(:hostname).split('.').first, primary: (vm_def[:primary] || false) do |box|
+    config.vm.define vm_def[:hostname], primary: (vm_def[:primary] || false) do |box|
 
       # specify the box to use and the hostname
       box.vm.box = vm_def[:box] || 'erumble/centos71-x64'
-      box.vm.hostname = vm_def.fetch(:hostname)
+      box.vm.hostname = vm_def[:hostname]
 
       # set up a private network so we don't have to use port forwarding
-      box.vm.network :private_network, ip: vm_def.fetch(:ip)
+      box.vm.network :private_network, ip: vm_def[:ip]
+
+      # set the role and environment for the box, base / production should always exist
+      role = vm_def[:role] || 'base'
+      environment = vm_def[:environment] || 'production'
 
       # allocate memory if it is specified
       box.vm.provider 'virtualbox' do |v| 
@@ -39,7 +43,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
       # access machines on local network via hostnames
       box.vm.provision :shell, inline: add_hosts_script
 
-      # setup the secure path and allow sudo access to forwarded ssh agent
+      # add /opt/puppetlabs/bin to secure path
       box.vm.provision 'shell', path: "#{script_dir}/sudoers.sh"
 
       # share some folders
@@ -49,11 +53,9 @@ Vagrant.configure(vagrantfile_api_version) do |config|
 
       # allow guest os to use host os ssh keys
       box.ssh.forward_agent = true
-
-      # run additional scripts
-      (vm_def[:scripts] || []).each do |script|
-        box.vm.provision 'shell', path: "#{script_dir}/#{script}"
-      end
+  
+      # bootstrap server
+      box.vm.provision 'shell', path: "#{script_dir}/puppet_bootstrap.sh", args: "#{role} #{environment}"
 
     end # config.vm.define
   end # vm_defs.each
