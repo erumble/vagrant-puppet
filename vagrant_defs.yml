@@ -1,0 +1,19 @@
+---
+- :role: 'puppetmaster'
+  :hostname: 'puppet'
+  :memory: 1024
+  :ip: '192.168.10.100'
+  :environment: 'production'
+
+- :role: 'devbox'
+  :hostname: 'devbox'
+  :cpus: 1
+  :memory: 2048
+  :box: 'erumble/centos67-x64'
+  :ip: '192.168.10.101'
+  :primary: true
+  :environment: 'production'
+  :shared_folders:
+    - :host_folder: '~/src/'
+      :guest_folder: '/root/src'
+
