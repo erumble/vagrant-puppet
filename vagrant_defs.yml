@@ -9,7 +9,7 @@
   :hostname: 'devbox'
   :cpus: 1
   :memory: 2048
-  :box: 'erumble/centos67-x64'
+  :box: 'erumble/centos71-x64'
   :ip: '192.168.10.101'
   :primary: true
   :environment: 'production'
