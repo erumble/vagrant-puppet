@@ -1,4 +1,4 @@
-vagrant-puppetserver
+vagrant-puppet
 ==============
 
 ####Provision a set of VMs that simulate a working Puppet stack
