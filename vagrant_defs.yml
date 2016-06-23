@@ -13,7 +13,3 @@
   :ip: '192.168.10.101'
   :primary: true
   :environment: 'production'
-  :shared_folders:
-    - :host_folder: '~/src/'
-      :guest_folder: '/root/src'
-
